@@ -37,3 +37,5 @@ $string['bulkforumname_help'] = 'This is the content of the help tooltip associa
 $string['bulkforum'] = 'bulkforum';
 $string['pluginadministration'] = 'bulkforum administration';
 $string['pluginname'] = 'bulkforum';
+$string['bulkforumaddselected'] = 'Add Selected';
+$string['bulkforumremoveselected'] = 'Remove';

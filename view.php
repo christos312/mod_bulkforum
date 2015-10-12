@@ -29,9 +29,10 @@
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
-
+require('./locallib.php');
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
 $n  = optional_param('n', 0, PARAM_INT);  // ... bulkforum instance ID - it should be named as the first character of the module.
+$postid = optional_param('postid', 0, PARAM_INT);
 
 if ($id) {
     $cm         = get_coursemodule_from_id('bulkforum', $id, 0, false, MUST_EXIST);
@@ -69,15 +70,68 @@ $PAGE->set_heading(format_string($course->fullname));
  */
 
 // Output starts here.
-echo $OUTPUT->header();
+
 
 // Conditions to show the intro can change to look for own settings or whatever.
 if ($bulkforum->intro) {
     echo $OUTPUT->box(format_module_intro('bulkforum', $bulkforum, $cm->id), 'generalbox mod_introbox', 'bulkforumintro');
 }
+$posts = get_posts($course->id, $cm->instance);
+$table = new html_table();
+$table->head = array('Post', 'Author', 'Date Created');
 
-// Replace the following lines with you own code.
-echo $OUTPUT->heading('Yay! It works!');
+//Get the course context to work with cababilities
+$coursecontext = context_course::instance($course->id);
+$display_posts = array();
+foreach($posts as $post){
+	$subject = "<a href='$CFG->wwwroot/mod/bulkforum/view.php?id=".$cm->id."&postid=".$post->id."&courseid=".$course->id."'>".$post->subject."</a><br/>";
 
+	$user = $DB->get_record_select('user', "id=".$post->userid);
+
+	$singledata = array($subject, $user->firstname." ".$user->lastname, date("d/m/Y H:i", $post->timecreated));
+
+	array_push($display_posts, $singledata);
+
+}
+$table->data = $display_posts;
+
+echo $OUTPUT->header();
+if(empty($postid)){
+	echo html_writer::table($table);
+}else{
+	$context = context_system::instance();
+	$posts = get_post($postid, $course->id);
+	if(!$posts){
+		print_error("You do not have permission to see this page");
+	}
+
+  $user = $DB->get_record_select('user', "id=".$posts->userid);
+
+    $controls = '';
+	if(has_capability('mod/bulkforum:editpost', $coursecontext)){
+        
+        $controls = html_writer::start_div('', array('class'=>'control-buttons'));
+        $controls .= html_writer::tag('a', 'EDIT', array('href'=>'./edit_post.php?id='.$cm->id.'&postid='.$postid.'&courseid='.$course->id));
+        $controls .= " | ";
+        $controls .= html_writer::tag('a', 'EDIT ALL', array('href'=>'./edit_post_all.php?id='.$cm->id.'&postid='.$postid.'&courseid='.$course->id));
+        $controls .= " | ";
+        $controls .= html_writer::tag('a', 'DELETE ALL', array('href'=>'./delete.php?id='.$cm->id.'&postid='.$postid.'&courseid='.$course->id));
+        $controls .= html_writer::end_div();//control-buttons
+
+	}
+    
+    $output = html_writer::start_div('',array('class'=>'forumpost clearfix firstpost starter'));
+    $output .= html_writer::tag('h1', $post->subject);
+    $output .= html_writer::tag('h6', 'Posted by ' . $user->firstname . " " . $user->lastname . " on " . date("d/m/Y H:i", $posts->timecreated));
+    $output .= html_writer::start_div('', array('class'=>'row'));
+    $output .= html_writer::start_div('', array('class'=>'span8'));
+    $output .= $posts->message;
+    $output .= $controls;
+    $output .= html_writer::end_div();//span8
+    $output .= html_writer::end_div();//row
+    $output .= html_writer::end_div();
+    
+    echo $output;
+}
 // Finish the page.
 echo $OUTPUT->footer();

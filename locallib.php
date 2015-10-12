@@ -28,11 +28,49 @@
 defined('MOODLE_INTERNAL') || die();
 
 /*
- * Does something really useful with the passed things
+ * Return selected courses
  *
  * @param array $things
- * @return object
- *function bulkforum_do_something_useful(array $things) {
- *    return new stdClass();
- *}
+ * @return array
  */
+ function get_selections(){
+	global $SESSION, $DB;
+
+	if(isset($SESSION->bulkforum['selected'])){
+
+		$results = array();
+		$courseids = $SESSION->bulkforum['selected'];
+
+		foreach($courseids as $id){
+			$course = $DB->get_record('course', array("id" => $id));
+			$results[$id] = $course->fullname;
+		}
+		return $results;
+	}
+}
+
+function get_posts($courseid, $instance){
+
+	global $DB;
+	//echo $courseid;
+	 if (! $bulkforum = $DB->get_record('bulkforum', array('id' => $instance))) {
+        return false;
+    }
+	$posts = $DB->get_records('bulkforum_threads', array("course" => $courseid), $sort='timecreated DESC');
+
+	return $posts;
+
+}
+
+function get_post($postid, $courseid){
+	
+	global $DB;
+	//echo $courseid;
+	$sql = "id=".$postid." AND course=".$courseid;
+	$post = $DB->get_record_select('bulkforum_threads', $sql, null);
+	//echo "<pre>";
+	//var_dump($post);
+	//echo "</pre>";
+	return $post;
+
+}

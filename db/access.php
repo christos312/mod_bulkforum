@@ -79,4 +79,21 @@ $capabilities = array(
             'student' => CAP_ALLOW
         )
     ),
+    'mod/bulkforum:addpost' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+    'mod/bulkforum:editpost' => array(
+        'riskbitmask' => RISK_SPAM,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => array(
+            'manager' => CAP_ALLOW
+        )
+    ),
+    
 );
