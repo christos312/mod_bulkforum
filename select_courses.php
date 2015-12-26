@@ -39,7 +39,7 @@ if ($mform->is_cancelled()) {
 
 
 	if(isset($data->submitbutton) && $data->submitbutton == "Save changes"){
-		redirect($CFG->wwwroot.'/mod/bulkforum/post_thread.php');
+		redirect($CFG->wwwroot.'/mod/bulkforum/post_thread.php?mode=add');
 
 	}elseif(isset($data->submitbutton) && $data->submitbutton == "Post"){
 
@@ -67,6 +67,4 @@ if ($mform->is_cancelled()) {
 //getCoursePendingSentMail();
 echo $OUTPUT->header();
 $mform->display();
-
-
 echo $OUTPUT->footer();

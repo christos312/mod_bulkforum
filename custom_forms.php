@@ -65,3 +65,25 @@ class post_form extends moodleform {
         return array();
     }
 }
+
+class edit_form extends moodleform{
+    public function definition() {
+        global $CFG;
+        $mform = $this->_form;
+
+        $data = $this->_customdata;
+
+
+        $mform->addElement('text', 'subject', "Subject", array('value'=>$data['post']->subject,'size'=>'20'));
+        $mform->setType('subject', PARAM_RAW);
+        $mform->addRule('subject', "Please type a subject", 'required', null, 'client', false, false);
+
+        $mform->addElement('editor', 'message', "Message")->setValue(array('text' => $data['post']->message));
+        $mform->setType('message', PARAM_RAW);
+        $mform->addRule('message', "Please type a message", 'required', null, 'client', false, false);
+
+        $mform->addElement('filemanager', 'unic_forum', 'Upload a file', null, array('maxbytes' => $CFG->maxbytes, 'maxfiles' => 3, 'accepted_types' => array('*')));
+
+        $this->add_action_buttons();
+    }
+}

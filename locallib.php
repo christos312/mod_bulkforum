@@ -74,3 +74,4 @@ function get_post($postid, $courseid){
 	return $post;
 
 }
+

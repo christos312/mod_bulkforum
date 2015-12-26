@@ -13,6 +13,11 @@ $PAGE->set_url($CFG->wwwroot.'/mod/bulkforum/post_thread.php');
 
 require_login(0, false);   // Script is useless unless they're logged in
 
+$id 		= optional_param('id', 0, PARAM_INT); // Course_module ID, or
+$n  		= optional_param('n', 0, PARAM_INT);  // ... unicforum instance ID - it should be named as the first character of the module.
+$postid 	= optional_param('postid', 0, PARAM_INT);
+$courseid 	= optional_param('courseid', 0, PARAM_INT);
+
 //Check permissions
 $context = context_system::instance();
 if (!has_capability("mod/bulkforum:addpost", $context)) {
@@ -20,41 +25,32 @@ if (!has_capability("mod/bulkforum:addpost", $context)) {
 }
 
 global $SESSION, $DB, $USER;
-
 $mform = new post_form(null, get_selections());
+
 
 if ($mform->is_cancelled()) {
 	redirect($CFG->wwwroot.'/mod/bulkforum/select_courses.php');
 
 }else if ($data = $mform->get_data()) {
+		//get selected courses from the session
+		$selectedcourses = $SESSION->bulkforum['selected'];
+		$uniqueid = uniqid();
+		//lets prepare the post to be saved on DB
+		$post = new stdClass();
+		foreach($selectedcourses as $course){
+			$post->userid 		= $USER->id;
+			$post->subject 		= $data->subject;
+			$post->message 		= $data->message['text'];
+			$post->emailsent	= 0;
+			$post->timecreated 	= time();
+			$post->course 		= $course;
+			$post->groupid		= $uniqueid;
 
-  //get selected courses from the session
-  $selectedcourses = $SESSION->bulkforum['selected'];
-  $uniqueid = uniqid();
-  //lets prepare the post to be saved on DB
-  $post = new stdClass();
-var_dump($selectedcourses);
-  foreach($selectedcourses as $course){
-		$post->userid 		= $USER->id;
-		$post->subject 		= $data->subject;
-		$post->message 		= $data->message['text'];
-		$post->emailsent	= 0;
-		$post->timecreated 	= time();
-		$post->course 		= $course;
-		$post->groupid		= $uniqueid;
+			$postid = $DB->insert_record('bulkforum_threads', $post);
+			$draftitemid = file_get_submitted_draft_itemid('bulk_forum');
 
-
-		$postid = $DB->insert_record('bulkforum_threads', $post);
-		$draftitemid = file_get_submitted_draft_itemid('bulk_forum');
-
-
-
-		file_save_draft_area_files($draftitemid, $context->id , 'mod_bulkforum', 'bulk_forum', $postid, array('subdirs'=>true));
-	}
-
-
-
-
+			file_save_draft_area_files($draftitemid, $context->id , 'mod_bulkforum', 'bulk_forum', $postid, array('subdirs'=>true));
+		}
 }else {
 
 }
